@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@acala-network/api": "4.1.4-5",
+    "@acala-network/bodhi": "^2.4.12",
     "@acala-network/sdk-core": "4.1.4-5",
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
@@ -29,7 +30,11 @@
     "@nestjs/serve-static": "^2.2.2",
     "@polkadot/api": "^8.2.2-2",
     "@polkadot/rpc-provider": "^8.2.2-2",
+    "@polkadot/ui-keyring": "^2.3.1",
+    "@polkadot/util-crypto": "^9.3.1",
+    "axios": "^0.27.2",
     "bignumber.js": "^9.0.2",
+    "ethers": "^5.6.8",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"

@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TokenController } from './token/token.controller';
+import { RewardController } from './reward/reward.controller';
+import { RewardService } from './reward/reward.service';
 
 @Module({
   imports: [
@@ -11,7 +13,7 @@ import { TokenController } from './token/token.controller';
       rootPath: join(__dirname, '..', 'public'),
     }),
   ],
-  controllers: [AppController, TokenController],
-  providers: [AppService],
+  controllers: [AppController, TokenController, RewardController],
+  providers: [AppService, RewardService],
 })
 export class AppModule {}
