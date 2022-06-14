@@ -23,4 +23,4 @@ spec:
           - path: /*
             backend:
               serviceName: taiga-api
-              servicePort: 8080
+              servicePort: 80

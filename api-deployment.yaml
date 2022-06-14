@@ -17,12 +17,12 @@ spec:
       restartPolicy: Always
       containers:
         - name: taiga-api
-          image: 343749756837.dkr.ecr.ap-southeast-1.amazonaws.com/taiga/api:prod-v1
+          image: 343749756837.dkr.ecr.ap-southeast-1.amazonaws.com/taiga/api:update_port
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
               path: /
-              port: 8080
+              port: 80
             initialDelaySeconds: 90
             timeoutSeconds: 20
             periodSeconds: 5
@@ -32,7 +32,7 @@ spec:
             periodSeconds: 5
             httpGet:
               path: /
-              port: 8080
+              port: 80
           command:
             - "npm"
             - "run"
