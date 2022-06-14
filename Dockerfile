@@ -1,3 +1,4 @@
 FROM node:16
 COPY . /taiga-api
-RUN npm ci
+WORKDIR /taiga-api
+RUN npm ci && npm run build
