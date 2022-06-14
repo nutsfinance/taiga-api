@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { FixedPointNumber } from '@acala-network/sdk-core';
 import fetch from 'axios';
+import * as _ from "lodash";
 import { RewardService } from './reward.service';
 
 export interface PoolApr {
@@ -27,7 +28,7 @@ export class RewardController {
   @Get('apr')
   async getApr(@Query('network') network, @Query('pool') pool): Promise<PoolApr> {
     const native = await getPoolAPR(network, pool);
-    const incentive = (network === "karura" && pool === 1)
+    const incentive = (network === "karura" && pool == 0)
       ? await getTaiKsmIncentiveAPR(new FixedPointNumber(4000))
       : 0;
 
@@ -58,9 +59,15 @@ async function getPoolAPR(network: string, poolId: number): Promise<number> {
   }
 
   const data = result.data.data.dailyData.nodes;
-  const dailyAPR = data.map((dailyData: PoolDailyData) => (dailyData.yieldVolume + dailyData.feeVolume) * 365 / dailyData.totalSupply);
+  const dailyFeeApr = data.map((dailyData: PoolDailyData) => dailyData.feeVolume * 365 / dailyData.totalSupply);
+  const dailyYieldApr = data.map((dailyData: PoolDailyData) => dailyData.yieldVolume * 365 / dailyData.totalSupply);
 
-  return dailyAPR.reduce((sum: number, current: number) => sum + current) / data.length;
+  const feeApr = _.mean(dailyFeeApr.filter(apr => apr < 0.5));
+  const yieldApr = _.mean(dailyYieldApr);
+
+  console.log(feeApr, yieldApr);
+
+  return feeApr + yieldApr;
 }
 
 async function getTaiKsmIncentiveAPR(dailyRewardAmount: FixedPointNumber): Promise<number> {
