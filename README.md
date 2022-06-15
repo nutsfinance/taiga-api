@@ -71,3 +71,14 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+## Deployment
+1. install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+2. Run `aws --region=ap-southeast-1 --profile=nuts eks update-kubeconfig --name beta`
+3. Run `./deploy $new_tag`
+4. Edit `api-deployment.yaml` to change the docker tag to the tag in step 3
+5. Run `kubectl apply -f api-deployment.yaml`
+
+## Check Logs
+1. Run `kubectl get pod` to get the pod name of this app
+2. Run `kubectl logs $pod_name` to view logs

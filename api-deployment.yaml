@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taiga-api
+  labels:
+    app.kubernetes.io/name: taiga-api
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: taiga-api
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: taiga-api
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: taiga-api
+          image: 343749756837.dkr.ecr.ap-southeast-1.amazonaws.com/taiga/api:update_port
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 90
+            timeoutSeconds: 20
+            periodSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            httpGet:
+              path: /
+              port: 80
+          command:
+            - "npm"
+            - "run"
+            - "start:prod"
