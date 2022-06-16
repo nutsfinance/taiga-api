@@ -11,6 +11,9 @@ import { RewardService } from './reward/reward.service';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+      serveStaticOptions: {
+        redirect: false,
+      },
     }),
   ],
   controllers: [AppController, TokenController, RewardController],
