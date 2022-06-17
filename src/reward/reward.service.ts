@@ -63,6 +63,7 @@ export class RewardService {
 
     const contract = new ethers.Contract(REWARD_DISTRIBUTORS[network][pool], abi, this.providers[network]);
     const addressKey = Keyring.encodeAddress(user, 42);
+    if (!rewardJson.claims[addressKey])  return {};
 
     const [tokens, amounts] = await contract.getClaimableFor(
         Keyring.decodeAddress(user),
@@ -73,7 +74,10 @@ export class RewardService {
     return {
         tokens,
         cumulative: rewardJson.claims[addressKey].cumulativeAmounts,
-        claimable: amounts.map(amount => amount.toString())
+        claimable: amounts.map(amount => amount.toString()),
+        index: rewardJson.claims[addressKey].index,
+        cycle: rewardJson.cycle,
+        proof: rewardJson.claims[addressKey].proof
     };
   }
 
