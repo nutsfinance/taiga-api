@@ -188,20 +188,20 @@ export class RewardService {
     let lksmApr = FixedPointNumber.ZERO;
     let karApr = FixedPointNumber.ZERO;
     for (let i = 0; i < dailyTotalSupply.length; i++) {
-      // 20000 TAI per week
-      const taiValue = new FixedPointNumber(20000).mul(FixedPointNumber.fromInner(dailyTaiPrice[i], 18));
+      // 8000 TAI per week
+      const taiValue = new FixedPointNumber(8000).mul(FixedPointNumber.fromInner(dailyTaiPrice[i], 18));
       taiApr = taiApr.add(taiValue.mul(new FixedPointNumber(365.0 / 7)).div(new FixedPointNumber(dailyTotalSupply[i])));
   
-      // 75 taiKSM per week
-      const taiKsmValue = new FixedPointNumber(75).mul(FixedPointNumber.fromInner(dailyTaiKsmPrice[i], 18));
+      // 30 taiKSM per week
+      const taiKsmValue = new FixedPointNumber(30).mul(FixedPointNumber.fromInner(dailyTaiKsmPrice[i], 18));
       taiKsmApr = taiKsmApr.add(taiKsmValue.mul(new FixedPointNumber(365.0 / 7)).div(new FixedPointNumber(dailyTotalSupply[i])));
   
-      // 500 LKSM per week
-      const lksmValue = new FixedPointNumber(500).mul(FixedPointNumber.fromInner(dailyLksmPrice[i], 18));
+      // 250 LKSM per week
+      const lksmValue = new FixedPointNumber(250).mul(FixedPointNumber.fromInner(dailyLksmPrice[i], 18));
       lksmApr = lksmApr.add(lksmValue.mul(new FixedPointNumber(365.0 / 7)).div(new FixedPointNumber(dailyTotalSupply[i])));
   
-      // 2400 KAR per week
-      const karValue = new FixedPointNumber(2400).mul(FixedPointNumber.fromInner(dailyKarPrice[i], 18));
+      // 2000 KAR per week
+      const karValue = new FixedPointNumber(2000).mul(FixedPointNumber.fromInner(dailyKarPrice[i], 18));
       karApr = karApr.add(karValue.mul(new FixedPointNumber(365.0 / 7)).div(new FixedPointNumber(dailyTotalSupply[i])));
     }
   
