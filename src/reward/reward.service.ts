@@ -11,6 +11,10 @@ import fetch from 'axios';
 import * as _ from "lodash";
 
 const REWARD_DISTRIBUTORS = {
+  "mandala": [
+    "0x90005382C1951eFDc027DFF09a7C9d1a1E5060EF",
+    "0x53CFdfD2C7387EB9409B8Fe63Eb99D2081718a12"
+  ],
   "karura": [
     "0xf595F4a81B27E5CC1Daca349A69c834f375224F4",
     "0xff066331be693BE721994CF19905b2DC7475C5c9"
@@ -32,6 +36,9 @@ export class RewardService {
   private providers: { [network: string]: Provider} = {};
 
   constructor() {
+    this.providers["mandala"] = new Provider({
+      provider: new WsProvider("wss://mandala-tc7-rpcnode.aca-dev.network/ws") 
+    });
     this.providers["karura"] = new Provider({
       provider: new WsProvider("wss://karura-rpc-2.aca-api.network/ws") 
     });
@@ -47,6 +54,12 @@ export class RewardService {
     await this.providers[network].api.isReady;
     const contract = new ethers.Contract(REWARD_DISTRIBUTORS[network][pool], abi, this.providers[network]);
     return (await contract.currentCycle()).toNumber();
+  }
+
+  async getCurrentRoot(network: string, pool: number): Promise<string> {
+    await this.providers[network].api.isReady;
+    const contract = new ethers.Contract(REWARD_DISTRIBUTORS[network][pool], abi, this.providers[network]);
+    return await contract.merkleRoot();
   }
 
   async getUserReward(user: string, network: string, pool: number) {
