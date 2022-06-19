@@ -19,7 +19,7 @@ const REWARD_DISTRIBUTORS = {
     "0xff066331be693BE721994CF19905b2DC7475C5c9"
   ],
   "acala": [
-
+    "0x219FA396aE50f789b0cE5e27D6EcbE6b36ef49d9"
   ]
 };
 
