@@ -3,7 +3,6 @@ import { WsProvider } from "@polkadot/api";
 import { Provider } from "@acala-network/bodhi";
 
 import { keyring as Keyring } from '@polkadot/ui-keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { ethers } from 'ethers';
 import { abi } from './abi';
 import { FixedPointNumber } from '@acala-network/sdk-core';
@@ -44,9 +43,6 @@ export class RewardService {
     });
     this.providers["acala"] = new Provider({
       provider: new WsProvider("wss://acala-rpc-0.aca-api.network/ws") 
-    });
-    cryptoWaitReady().then(() => {
-        Keyring.loadAll({ ss58Format: 42, type: 'sr25519' });
     });
   }
 

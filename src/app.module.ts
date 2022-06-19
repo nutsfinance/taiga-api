@@ -6,6 +6,8 @@ import { join } from 'path';
 import { TokenController } from './token/token.controller';
 import { RewardController } from './reward/reward.controller';
 import { RewardService } from './reward/reward.service';
+import { AirdropController } from './airdrop/airdrop.controller';
+import { AirdropService } from './airdrop/airdrop.service';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { RewardService } from './reward/reward.service';
       },
     }),
   ],
-  controllers: [AppController, TokenController, RewardController],
-  providers: [AppService, RewardService],
+  controllers: [AppController, TokenController, RewardController, AirdropController],
+  providers: [AppService, RewardService, AirdropService],
 })
 export class AppModule {}
