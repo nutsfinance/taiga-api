@@ -22,6 +22,8 @@ const AIRDROP_DISTRIBUTORS = {
 @Injectable()
 export class AirdropService {
   private providers: { [network: string]: Provider} = {};
+  private airdropMerkles: {[key: string]: any} = {};
+  private airdropInfos: {[key: string]: any} = {};
 
   constructor() {
     this.providers["mandala"] = new Provider({
@@ -50,40 +52,50 @@ export class AirdropService {
   async getUserAirdrop(user: string, network: string, id: number) {
     await this.providers[network].api.isReady;
     const cycle = await this.getCurrentCycle(network, id);
-    let response;
-    try {
-      response = await fetch(`/airdrop_${network}_${id}_${cycle}.json`);
-    } catch (error) {
-      console.error(error)
-      return {};
+    const airdropKey = `airdrop_${network}_${id}_${cycle}`;
+    let airdropJson = this.airdropMerkles[airdropKey];
+    
+    if (!airdropJson) {
+      try {
+        const response = await fetch(`http://reward-merkle-json.s3-website-ap-southeast-1.amazonaws.com/${airdropKey}.json`);
+        airdropJson = response.data;
+        this.airdropMerkles[airdropKey] = airdropJson;
+      } catch (error) {
+        console.error(error)
+        return {};
+      }
     }
-    const rewardJson = response.data;
 
     const contract = new ethers.Contract(AIRDROP_DISTRIBUTORS[network][id], abi, this.providers[network]);
     const addressKey = Keyring.encodeAddress(user, 42);
-    if (!rewardJson.claims[addressKey])  return {};
+    if (!airdropJson.claims[addressKey])  return {};
 
     const [tokens, amounts] = await contract.getClaimableFor(
         Keyring.decodeAddress(user),
-        rewardJson.claims[addressKey].tokens,
-        rewardJson.claims[addressKey].cumulativeAmounts
+        airdropJson.claims[addressKey].tokens,
+        airdropJson.claims[addressKey].cumulativeAmounts
     );
 
-    let info = {}
-    try {
-      const infoJson = (await fetch(`/airdrop_${network}_${id}_info.json`)).data;
-      info = infoJson.find(i => i.address === addressKey);
-    } catch (error) {
-      console.error(error)
+    const infoKey = `airdrop_${network}_${id}_info`;
+    let infoJson = this.airdropInfos[infoKey];
+    if (!infoJson) {
+      try {
+        const response = await fetch(`http://reward-merkle-json.s3-website-ap-southeast-1.amazonaws.com/${infoKey}.json`);
+        infoJson = response.data;
+        this.airdropInfos[infoKey] = infoJson;
+      } catch (error) {
+        console.error(error)
+      }
     }
+    const info = infoJson.find(i => i.address === addressKey) || {};
 
     return {
         tokens,
-        cumulative: rewardJson.claims[addressKey].cumulativeAmounts,
+        cumulative: airdropJson.claims[addressKey].cumulativeAmounts,
         claimable: amounts.map(amount => amount.toString()),
-        index: rewardJson.claims[addressKey].index,
-        cycle: rewardJson.cycle,
-        proof: rewardJson.claims[addressKey].proof,
+        index: airdropJson.claims[addressKey].index,
+        cycle: airdropJson.cycle,
+        proof: airdropJson.claims[addressKey].proof,
         info
     };
   }

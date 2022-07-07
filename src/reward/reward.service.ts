@@ -34,6 +34,7 @@ interface PoolDailyData {
 @Injectable()
 export class RewardService {
   private providers: { [network: string]: Provider} = {};
+  private rewardMerkles: {[key: string]: any} = {};
 
   constructor() {
     this.providers["mandala"] = new Provider({
@@ -62,14 +63,19 @@ export class RewardService {
   async getUserReward(user: string, network: string, pool: number) {
     await this.providers[network].api.isReady;
     const cycle = await this.getCurrentCycle(network, pool);
-    let response;
-    try {
-      response = await fetch(`/rewards_${network}_${pool}_${cycle}.json`);
-    } catch (error) {
-      console.error(error)
-      return {};
+    const rewardKey = `rewards_${network}_${pool}_${cycle}`;
+    let rewardJson = this.rewardMerkles[rewardKey];
+
+    if (!rewardJson) {
+      try {
+        const response = await fetch(`http://reward-merkle-json.s3-website-ap-southeast-1.amazonaws.com/${rewardKey}.json`);
+        rewardJson = response.data;
+        this.rewardMerkles[rewardKey] = rewardJson;
+      } catch (error) {
+        console.error(error)
+        return {};
+      }
     }
-    const rewardJson = response.data;
 
     const contract = new ethers.Contract(REWARD_DISTRIBUTORS[network][pool], abi, this.providers[network]);
     const addressKey = Keyring.encodeAddress(user, 42);
