@@ -10,7 +10,7 @@ export class ProtocolController {
 
   @Get("taiga/tvl")
   async getTaiTotalSupply(): Promise<string> {
-    const taiksmTotalSupply = new BN(await this.tokenService.getTaiTotalSupply());
+    const taiksmTotalSupply = new BN(await this.tokenService.getTaiKsmTotalSupply());
     const threeUsdTotalSupply = new BN(await this.tokenService.getThreeUsdTotalSupply());
 
     const ksmPrice = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=kusama&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true')
