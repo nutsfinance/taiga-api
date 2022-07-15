@@ -7,6 +7,33 @@ export class TokenController {
   constructor(private tokenService: TokenService) {
   }
 
+  @Get("taiksm")
+  async getTaiKsmStats() {
+    const tvl = await this.tokenService.getTaiKsmTotalSupply();
+
+    return {
+      tvl
+    };
+  }
+
+  @Get("3usd")
+  async getThreeUsdStats() {
+    const tvl = await this.tokenService.getThreeUsdTotalSupply();
+
+    return {
+      tvl
+    };
+  }
+
+  @Get("tdot")
+  async getTdotStats() {
+    const tvl = await this.tokenService.getTdotTotalSupply();
+
+    return {
+      tvl
+    };
+  }
+
   @Get("tai/total-supply")
   async getTaiTotalSupply(): Promise<string> {
     return this.tokenService.getTaiTotalSupply();
