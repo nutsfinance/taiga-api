@@ -9,9 +9,9 @@ export class ProtocolController {
   }
 
   @Get("taiga/tvl")
-  async getTaiTotalSupply(): Promise<string> {
-    const taiksmTotalSupply = new BN(await this.tokenService.getTaiKsmTotalSupply());
-    const threeUsdTotalSupply = new BN(await this.tokenService.getThreeUsdTotalSupply());
+  async getTaigaTvl(): Promise<string> {
+    const taiksmTotalSupply = new BN(await this.tokenService.getTotalSupply('karura', 'sa://0', 12));
+    const threeUsdTotalSupply = new BN(await this.tokenService.getTotalSupply('karura', 'sa://1', 12));
 
     const ksmPrice = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=kusama&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true')
 
@@ -19,8 +19,8 @@ export class ProtocolController {
   }
 
   @Get("tapio/tvl")
-  async getTaiKsmTotalSupply(): Promise<string> {
-    const tdotTotalSupply = new BN(await this.tokenService.getTdotTotalSupply());
+  async getTapioTvl(): Promise<string> {
+    const tdotTotalSupply = new BN(await this.tokenService.getTotalSupply('acala', 'sa://0', 10));
 
     const dotPrice = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=polkadot&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true')
 

@@ -1,9 +1,10 @@
-import { Controller, Get, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ApiPromise } from "@polkadot/api";
 import { WsProvider } from "@polkadot/rpc-provider";
 import { options } from "@acala-network/api";
 import { forceToCurrencyId } from "@acala-network/sdk-core";
 import BN from "bignumber.js";
+import fetch from 'axios';
 
 const MULTISIG = "pqdhUsWkiGqyGvKDED2qAqiX4hHjtjJdBsmoj1HTAUhCRNk";
 const TAI = "TAI";
@@ -22,7 +23,7 @@ export class TokenService {
     this.apis['acala'] = new ApiPromise(options({ provider: acalaProvider }));
   }
 
-  async getTaiTotalSupply(): Promise<string> {
+  async getTaiCirculatingSupply(): Promise<string> {
     const api = this.apis['karura'];
     await api.isReady;
 
@@ -38,33 +39,31 @@ export class TokenService {
     return circulating.toPrecision(12);
   }
 
-  async getTaiKsmTotalSupply(): Promise<string> {
-    const api = this.apis['karura'];
+  async getTotalSupply(network: string, asset: string, decimals: number): Promise<string> {
+    const api = this.apis[network];
     await api.isReady;
 
-    const currencyId = forceToCurrencyId(api, "sa://0");
+    const currencyId = forceToCurrencyId(api, asset);
     const totalIssuance = await api.query.tokens.totalIssuance(currencyId);
-    
-    return new BN(totalIssuance.toString()).div(KSM_ONE).toPrecision(12);
+    const unit = new BN(10).pow(decimals);
+
+    return new BN(totalIssuance.toString()).div(unit).toPrecision(decimals);
   }
 
-  async getThreeUsdTotalSupply(): Promise<string> {
-    const api = this.apis['karura'];
-    await api.isReady;
+  async getHolderAmount(network: string, asset: string): Promise<number> {
+    const query = `https://api.subquery.network/sq/AcalaNetwork/${network}-tokens-ipfs?`
+    + `query={accountBalances(filter: {tokenId: {equalTo: "${asset}"}}) {totalCount}}`;
+    const result = await fetch(query);
+    if (result.status != 200) {
+      return 0;
+    }
 
-    const currencyId = forceToCurrencyId(api, "sa://1");
-    const totalIssuance = await api.query.tokens.totalIssuance(currencyId);
-    
-    return new BN(totalIssuance.toString()).div(KSM_ONE).toPrecision(12);
+    return result.data.data.accountBalances.totalCount;
   }
 
-  async getTdotTotalSupply(): Promise<string> {
-    const api = this.apis['acala'];
-    await api.isReady;
+  async getPrice(asset: string): Promise<number> {
+    const price = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${asset}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`)
 
-    const currencyId = forceToCurrencyId(api, "sa://0");
-    const totalIssuance = await api.query.tokens.totalIssuance(currencyId);
-    
-    return new BN(totalIssuance.toString()).div(DOT_ONE).toPrecision(12);
+    return price.data[asset].usd;
   }
 }

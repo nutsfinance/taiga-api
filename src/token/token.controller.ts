@@ -7,50 +7,119 @@ export class TokenController {
   constructor(private tokenService: TokenService) {
   }
 
-  @Get("taiksm")
+  @Get("taiksm/stats")
   async getTaiKsmStats() {
-    const tvl = await this.tokenService.getTaiKsmTotalSupply();
+    const total = await this.tokenService.getTotalSupply('karura', "sa://0", 12);
+    const holder = await this.tokenService.getHolderAmount('karura', 'sa://0');
+    const price = await this.tokenService.getPrice('kusama');
 
     return {
-      tvl
+      total,
+      chains: {
+        karura: total
+      },
+      // Karura Pulse
+      code: 1,
+      data: {
+        label: 'taiKSM',
+        tvl: Number(total) * price,
+        holder,
+        data: new Date().toISOString()
+      }
     };
   }
 
-  @Get("3usd")
+  @Get("3usd/stats")
   async getThreeUsdStats() {
-    const tvl = await this.tokenService.getThreeUsdTotalSupply();
+    const total = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
+    const holder = await this.tokenService.getHolderAmount('karura', 'sa://1');
 
     return {
-      tvl
+      total,
+      chains: {
+        karura: total
+      },
+      // Karura Pulse
+      code: 1,
+      data: {
+        label: '3USD',
+        tvl: total,
+        holder,
+        data: new Date().toISOString()
+      }
     };
   }
 
-  @Get("tdot")
+  @Get("tdot/stats")
   async getTdotStats() {
-    const tvl = await this.tokenService.getTdotTotalSupply();
+    const total = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
+    const holder = await this.tokenService.getHolderAmount('acala', 'sa://0');
+    const price = await this.tokenService.getPrice('polkadot');
 
     return {
-      tvl
+      total,
+      chains: {
+        acala: total
+      },
+      // Karura Pulse
+      code: 1,
+      data: {
+        label: 'tDOT',
+        tvl: Number(total) * price,
+        holder,
+        data: new Date().toISOString()
+      }
     };
   }
+
+  /**
+   * Below are deprecated methods. Should be removed after all dependencies are updated.
+   */
+  
+   @Get("taiksm")
+   async getTaiKsmData() {
+     const total = await this.tokenService.getTotalSupply('karura', "sa://0", 12);
+ 
+     return {
+       tvl: total
+     };
+   }
+ 
+   @Get("3usd")
+   async getThreeUsdData() {
+     const total = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
+ 
+     return {
+       tvl: total,
+     };
+   }
+ 
+   @Get("tdot")
+   async getTdotData() {
+     const total = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
+     
+     return {
+       tvl: total,
+     };
+   }
 
   @Get("tai/total-supply")
   async getTaiTotalSupply(): Promise<string> {
-    return this.tokenService.getTaiTotalSupply();
+    return this.tokenService.getTaiCirculatingSupply();
   }
 
   @Get("taiksm/total-supply")
   async getTaiKsmTotalSupply(): Promise<string> {
-    return this.tokenService.getTaiKsmTotalSupply();
+    return this.tokenService.getTotalSupply('karura', 'sa://0', 12);
   }
 
   @Get("3usd/total-supply")
   async getThreeUsdTotalSupply(): Promise<string> {
-    return this.tokenService.getThreeUsdTotalSupply();
+    return this.tokenService.getTotalSupply('karura', 'sa://1', 12);
   }
 
   @Get("tdot/total-supply")
   async getTdotTotalSupply(): Promise<string> {
-    return this.tokenService.getTdotTotalSupply();
+    return this.tokenService.getTotalSupply('acala', 'sa://0', 10);
   }
 }
