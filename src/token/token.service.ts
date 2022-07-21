@@ -39,7 +39,10 @@ export class TokenService {
     return circulating.toPrecision(12);
   }
 
-  async getTotalSupply(network: string, asset: string, decimals: number): Promise<string> {
+  /**
+   * @dev Gets the current total supply of an asset.
+   */
+  async getTotalSupply(network: string, asset: string, decimals: number) {
     const api = this.apis[network];
     await api.isReady;
 
@@ -47,7 +50,27 @@ export class TokenService {
     const totalIssuance = await api.query.tokens.totalIssuance(currencyId);
     const unit = new BN(10).pow(decimals);
 
-    return new BN(totalIssuance.toString()).div(unit).toPrecision(decimals);
+    return new BN(totalIssuance.toString()).div(unit).toNumber();
+  }
+
+  /**
+   * @dev Gets the history of total supply for an asset.
+   */
+  async getTotalSupplyHistory(network: string, asset: string, decimals: number, days: number = 1) {
+    const query = `https://api.subquery.network/sq/AcalaNetwork/${network}-tokens-ipfs?`
+    + `query={token(id:"${asset}"){dailyTokens(first:${days}, orderBy: TIMESTMAP_DESC){nodes{issuance,timestmap}}}}`;
+    const result = await fetch(query);
+    if (result.status != 200) {
+      return [];
+    }
+
+    const unit = new BN(10).pow(decimals);
+    return result.data.data.token.dailyTokens.nodes.map(node => (
+      {
+        issuance: new BN(node.issuance).div(unit).toNumber(),
+        timestamp: node.timestmap
+      }
+    ));
   }
 
   async getHolderAmount(network: string, asset: string): Promise<number> {
@@ -61,9 +84,34 @@ export class TokenService {
     return result.data.data.accountBalances.totalCount;
   }
 
+  /**
+   * @dev Gets the current price of an asset.
+   */
   async getPrice(asset: string): Promise<number> {
     const price = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${asset}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`)
 
     return price.data[asset].usd;
+  }
+
+  /**
+   * @dev Gets the price history of an asset.
+   */
+  async getPriceHistory(network: string, asset: string, days: number = 1) {
+    const query = `https://api.subquery.network/sq/AcalaNetwork/${network}-dex?`
+    + `query={token(id:"${asset}"){dailyData(first:${days}, orderBy: TIMESTAMP_DESC){nodes{price,timestamp}}}}`;
+    console.log(query)
+    const result = await fetch(query);
+    if (result.status != 200) {
+      return [];
+    }
+
+    // Price returned by Acala SubQuery has 18 decimals
+    const unit = new BN(10).pow(18);
+    return result.data.data.token.dailyData.nodes.map(node => (
+      {
+        price: new BN(node.price).div(unit).toNumber(),
+        timestamp: node.timestamp
+      }
+    ));
   }
 }

@@ -8,22 +8,48 @@ export class ProtocolController {
   constructor(private tokenService: TokenService) {
   }
 
+
+  @Get("taiga/stats")
+  async getTaigaStats() {
+    const taiksmTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://0', 12);
+    const ksmPrice = await this.tokenService.getPrice('kusama');
+
+    const threeUsdTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
+
+    return {
+      tvl: ksmPrice * taiksmTotalSupply + threeUsdTotalSupply
+    };
+  }
+
+  @Get("tapio/stats")
+  async getTapioStats() {
+    const tdotTotalSupply = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
+    const dotPrice = await this.tokenService.getPrice('polkadot');
+
+    return {
+      tvl: tdotTotalSupply * dotPrice
+    };
+  }
+
+  /**
+   * Below are deprecated methods and should be removed later.
+   */
+
   @Get("taiga/tvl")
-  async getTaigaTvl(): Promise<string> {
-    const taiksmTotalSupply = new BN(await this.tokenService.getTotalSupply('karura', 'sa://0', 12));
-    const threeUsdTotalSupply = new BN(await this.tokenService.getTotalSupply('karura', 'sa://1', 12));
+  async getTaigaTvl() {
+    const taiksmTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://0', 12);
+    const ksmPrice = await this.tokenService.getPrice('kusama');
 
-    const ksmPrice = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=kusama&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true')
+    const threeUsdTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
 
-    return new BN(ksmPrice.data.kusama.usd).times(taiksmTotalSupply).plus(threeUsdTotalSupply).toString();
+    return ksmPrice * taiksmTotalSupply + threeUsdTotalSupply;
   }
 
   @Get("tapio/tvl")
-  async getTapioTvl(): Promise<string> {
-    const tdotTotalSupply = new BN(await this.tokenService.getTotalSupply('acala', 'sa://0', 10));
+  async getTapioTvl() {
+    const tdotTotalSupply = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
+    const dotPrice = await this.tokenService.getPrice('polkadot');
 
-    const dotPrice = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=polkadot&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true')
-
-    return new BN(dotPrice.data.polkadot.usd).times(tdotTotalSupply).toString();
+    return tdotTotalSupply * dotPrice;
   }
 }
