@@ -17,7 +17,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: taiga-api
-          image: 343749756837.dkr.ecr.ap-southeast-1.amazonaws.com/taiga/api:v-0.1.0
+          image: 343749756837.dkr.ecr.ap-southeast-1.amazonaws.com/taiga/api:v-0.1.1
           imagePullPolicy: Always
           livenessProbe:
             httpGet:

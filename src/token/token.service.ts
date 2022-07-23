@@ -5,12 +5,19 @@ import { options } from "@acala-network/api";
 import { forceToCurrencyId } from "@acala-network/sdk-core";
 import BN from "bignumber.js";
 import fetch from 'axios';
+import { timestamp } from "rxjs";
 
 const MULTISIG = "pqdhUsWkiGqyGvKDED2qAqiX4hHjtjJdBsmoj1HTAUhCRNk";
 const TAI = "TAI";
 const KSM_ONE = new BN("1000000000000");
 const DOT_ONE = new BN("10000000000");
 const TAI_INITIAL_SUPPLY = KSM_ONE.multipliedBy(10000000);
+
+export interface TokenBalance {
+  free: number,
+  reserved: number,
+  frozen: number
+}
 
 @Injectable()
 export class TokenService {
@@ -21,6 +28,21 @@ export class TokenService {
 
     const acalaProvider = new WsProvider("wss://acala-polkadot.api.onfinality.io/public-ws");
     this.apis['acala'] = new ApiPromise(options({ provider: acalaProvider }));
+  }
+
+  async getTokenBalance(network: string, asset: string, user: string, decimals: number): Promise<TokenBalance> {
+    const api = this.apis[network];
+    await api.isReady;
+
+    const currencyId = forceToCurrencyId(api, asset);
+    const balances = await api.query.tokens.accounts(user, currencyId);
+    const unit = new BN(10).pow(decimals);
+
+    return {
+      free: new BN(balances["free"].toString()).div(unit).toNumber(),
+      reserved: new BN(balances["reserved"].toString()).div(unit).toNumber(),
+      frozen: new BN(balances["frozen"].toString()).div(unit).toNumber(),
+    }
   }
 
   async getTaiCirculatingSupply(): Promise<string> {
@@ -87,10 +109,10 @@ export class TokenService {
   /**
    * @dev Gets the current price of an asset.
    */
-  async getPrice(asset: string): Promise<number> {
-    const price = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${asset}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`)
+  async getPrice(network: string, asset: string): Promise<number> {
+    const prices = await this.getPriceHistory(network, asset, 1);
 
-    return price.data[asset].usd;
+    return prices[0].price;
   }
 
   /**

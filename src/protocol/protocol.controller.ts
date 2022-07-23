@@ -12,7 +12,7 @@ export class ProtocolController {
   @Get("taiga/stats")
   async getTaigaStats() {
     const taiksmTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://0', 12);
-    const ksmPrice = await this.tokenService.getPrice('kusama');
+    const ksmPrice = await this.tokenService.getPrice('karura', 'sa://0');
 
     const threeUsdTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
 
@@ -24,7 +24,7 @@ export class ProtocolController {
   @Get("tapio/stats")
   async getTapioStats() {
     const tdotTotalSupply = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
-    const dotPrice = await this.tokenService.getPrice('polkadot');
+    const dotPrice = await this.tokenService.getPrice("acala", "sa://0");
 
     return {
       tvl: tdotTotalSupply * dotPrice
@@ -38,7 +38,7 @@ export class ProtocolController {
   @Get("taiga/tvl")
   async getTaigaTvl() {
     const taiksmTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://0', 12);
-    const ksmPrice = await this.tokenService.getPrice('kusama');
+    const ksmPrice = await this.tokenService.getPrice("karura", "sa://0");
 
     const threeUsdTotalSupply = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
 
@@ -48,7 +48,7 @@ export class ProtocolController {
   @Get("tapio/tvl")
   async getTapioTvl() {
     const tdotTotalSupply = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
-    const dotPrice = await this.tokenService.getPrice('polkadot');
+    const dotPrice = await this.tokenService.getPrice("acala", "sa://0");
 
     return tdotTotalSupply * dotPrice;
   }

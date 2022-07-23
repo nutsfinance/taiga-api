@@ -1,42 +1,92 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import BN from "bignumber.js";
 import { TokenService } from "./token.service";
+
+const TOKEN_CONFIG = {
+  "ksm": {
+    network: "karura",
+    asset: "KSM",
+    decimals: 12
+  },
+  "lksm": {
+    network: "karura",
+    asset: "LKSM",
+    decimals: 12
+  },
+  "taiksm": {
+    network: "karura",
+    asset: "sa://0",
+    decimals: 12,
+    reference: "KSM"
+  },
+  "3usd": {
+    network: "karura",
+    asset: "sa://1",
+    decimals: 12,
+    reference: "KUSD"
+  },
+  "dot": {
+    network: "acala",
+    asset: "DOT",
+    decimals: 10
+  },
+  "ldot": {
+    network: "acala",
+    asset: "LDOT",
+    decimals: 10
+  },
+  "tdot": {
+    network: "acala",
+    asset: "sa://0",
+    decimals: 10,
+    reference: "DOT"
+  }
+};
 
 @Controller("tokens")
 export class TokenController {
   constructor(private tokenService: TokenService) {
   }
 
-  @Get("taiksm/stats")
-  async getTaiKsmStats() {
-    const total = await this.tokenService.getTotalSupply('karura', "sa://0", 12);
-    const holder = await this.tokenService.getHolderAmount('karura', 'sa://0');
-    const price = await this.tokenService.getPrice('kusama');
+  @Get(":token/balance")
+  async getTokenBalance(@Param("token") token: string, @Query("user") user: string) {
+    const config = TOKEN_CONFIG[token.toLocaleLowerCase()];
+    return this.tokenService.getTokenBalance(config.network, config.asset, user, config.decimals);
+  }
 
-    return {
+  @Get(":token/stats")
+  async getTokenStats(@Param("token") token: string) {
+    const config = TOKEN_CONFIG[token.toLocaleLowerCase()];
+    const total = await this.tokenService.getTotalSupply(config.network, config.asset, config.decimals);
+    const holder = await this.tokenService.getHolderAmount(config.network, config.asset);
+    const price = await this.tokenService.getPrice(config.network, config.reference || config.asset);
+
+    const stats =  {
       total,
-      chains: {
-        karura: total
-      },
-      // Karura Pulse
+      chains: {},
+      // Acala/Karura Pulse
       code: 1,
       data: {
-        label: 'taiKSM',
+        label: token,
         tvl: Number(total) * price,
         holder,
         data: new Date().toISOString()
       }
     };
+    stats.chains[config.network] = total;
+
+    return stats;
   }
 
-  @Get("taiksm/history")
-  async getTaiKsmHistory(@Query('days') days: number = 30) {
-    const totalSupplies = await this.tokenService.getTotalSupplyHistory('karura', 'sa://0', 12, days);
-    const prices = await this.tokenService.getPriceHistory('karura', 'KSM', days);
+  @Get(":token/history")
+  async getTokenHistory(@Param("token") token: string, @Query('days') days: number = 30) {
+    const config = TOKEN_CONFIG[token.toLocaleLowerCase()];
+    const totalSupplies = await this.tokenService.getTotalSupplyHistory(config.network, config.asset, config.decimals, days);
+    const prices = await this.tokenService.getPriceHistory(config.network, config.reference || config.asset, days);
     const data = [];
     for (let i = 0; i < days; i++) {
       data.push({
-        label: 'taiKSM',
+        label: token,
         tvl: totalSupplies[i].issuance * prices[i].price,
         holder: '-',
         date: new Date(prices[i].timestamp).toISOString()
@@ -47,90 +97,6 @@ export class TokenController {
       // Karura Pulse
       code: 1,
       data
-    };
-  }
-
-  @Get("3usd/history")
-  async getThreeUsdHistory(@Query('days') days: number = 30) {
-    const totalSupplies = await this.tokenService.getTotalSupplyHistory('karura', 'sa://1', 12, days);
-    const data = [];
-    for (let i = 0; i < days; i++) {
-      data.push({
-        label: '3USD',
-        tvl: totalSupplies[i].issuance,
-        holder: '-',
-        date: new Date(totalSupplies[i].timestamp).toISOString()
-      });
-    }
-
-    return {
-      // Karura Pulse
-      code: 1,
-      data
-    };
-  }
-
-  @Get("tdot/history")
-  async getTdotHistory(@Query('days') days: number = 30) {
-    const totalSupplies = await this.tokenService.getTotalSupplyHistory('acala', 'sa://0', 10, days);
-    const prices = await this.tokenService.getPriceHistory('acala', 'DOT', days);
-    const data = [];
-    for (let i = 0; i < days; i++) {
-      data.push({
-        label: 'tDOT',
-        tvl: totalSupplies[i].issuance * prices[i].price,
-        holder: '-',
-        date: new Date(prices[i].timestamp).toISOString()
-      });
-    }
-
-    return {
-      // Acala Pulse
-      code: 1,
-      data
-    };
-  }
-
-  @Get("3usd/stats")
-  async getThreeUsdStats() {
-    const total = await this.tokenService.getTotalSupply('karura', 'sa://1', 12);
-    const holder = await this.tokenService.getHolderAmount('karura', 'sa://1');
-
-    return {
-      total,
-      chains: {
-        karura: total
-      },
-      // Karura Pulse
-      code: 1,
-      data: {
-        label: '3USD',
-        tvl: total,
-        holder,
-        data: new Date().toISOString()
-      }
-    };
-  }
-
-  @Get("tdot/stats")
-  async getTdotStats() {
-    const total = await this.tokenService.getTotalSupply('acala', 'sa://0', 10);
-    const holder = await this.tokenService.getHolderAmount('acala', 'sa://0');
-    const price = await this.tokenService.getPrice('polkadot');
-
-    return {
-      total,
-      chains: {
-        acala: total
-      },
-      // Karura Pulse
-      code: 1,
-      data: {
-        label: 'tDOT',
-        tvl: Number(total) * price,
-        holder,
-        data: new Date().toISOString()
-      }
     };
   }
 
