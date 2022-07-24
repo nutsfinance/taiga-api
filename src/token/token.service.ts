@@ -23,6 +23,9 @@ export interface TokenBalance {
 export class TokenService {
   private apis: { [network: string]: ApiPromise} = {};
   constructor() {
+    const mandalaProvider = new WsProvider("wss://mandala-tc7-rpcnode.aca-dev.network/ws");
+    this.apis['mandala'] = new ApiPromise(options({ provider: mandalaProvider }));
+
     const karuraProvider = new WsProvider("wss://karura.api.onfinality.io/public-ws");
     this.apis['karura'] = new ApiPromise(options({ provider: karuraProvider }));
 
